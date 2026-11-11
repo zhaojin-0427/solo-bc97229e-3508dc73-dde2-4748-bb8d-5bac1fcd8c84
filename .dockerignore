@@ -1,0 +1,8 @@
+.git
+.pydeps
+__pycache__
+*.pyc
+tests
+*.md
+.gitignore
+run_dev.sh

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="card">
+  <h2>第一步：输入公示页 URL</h2>
+  <p class="hint">
+    输入包含水文公示表格的网页地址，系统将抓取页面并列出其中的 HTML 表格。
+  </p>
+  <form action="{{ url_for('fetch') }}" method="post" class="url-form">
+    <input type="text" name="url" placeholder="https://example.gov.cn/reservoir/notice.html"
+           required autofocus>
+    <button type="submit" class="btn primary">抓取并选择表格</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>本地示例公示页（离线可演示）</h2>
+  <ul class="sample-list">
+    <li>
+      <strong>标准示例：</strong>含两级合并表头、水库名 rowspan 继承、空观测单元格的公示页。
+      <form action="{{ url_for('fetch') }}" method="post">
+        <input type="hidden" name="url" value="{{ sample_url }}">
+        <button type="submit" class="btn">使用标准示例页</button>
+        <a class="btn ghost" href="{{ sample_url }}" target="_blank" rel="noopener">新窗口查看</a>
+      </form>
+    </li>
+    <li>
+      <strong>错误示例：</strong>含跨表头/正文 rowspan、正文非法 colspan 的公示页，用于演示报错定位。
+      <form action="{{ url_for('fetch') }}" method="post">
+        <input type="hidden" name="url" value="{{ sample_error_url }}">
+        <button type="submit" class="btn">使用错误示例页</button>
+        <a class="btn ghost" href="{{ sample_error_url }}" target="_blank" rel="noopener">新窗口查看</a>
+      </form>
+    </li>
+  </ul>
+</section>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="card error-card">
+  <h2>{% if stopped %}转换已停止{% else %}{{ stage }}失败{% endif %}</h2>
+  <div class="error-box">
+    <span class="error-tag">{{ stage }}阶段</span>
+    <p>{{ message }}</p>
+  </div>
+  {% if stopped %}
+  <p class="hint">请根据上述来源单元格坐标（R行C列）修正公示页表格后重新抓取；在错误排除前不会生成任何记录。</p>
+  {% endif %}
+  <p><a class="btn primary" href="{{ url_for('index') }}">← 返回重新输入 URL</a></p>
+</section>
+{% endblock %}

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>2026年11月上旬大中型水库水情公示（示例）</title>
+  <style>
+    body { font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+      max-width: 980px; margin: 30px auto; color: #222; padding: 0 16px; }
+    h1 { font-size: 22px; text-align: center; }
+    .meta { text-align: center; color: #666; font-size: 13px; margin-bottom: 18px; }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; }
+    caption { font-weight: 700; margin-bottom: 8px; }
+    th, td { border: 1px solid #555; padding: 7px 9px; text-align: center; }
+    thead th { background: #e8f1fa; }
+    .note { margin-top: 18px; font-size: 13px; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>某市水利局大中型水库水情公示表</h1>
+  <p class="meta">公示期：2026-11-01 至 2026-11-10 ｜ 数据来源：市水文水资源测报中心（本页为本地演示示例）</p>
+
+  <table id="water-level-table">
+    <caption>表1 水库蓄水与来水情况（两级合并表头）</caption>
+    <thead>
+      <tr>
+        <th rowspan="2">水库名称</th>
+        <th colspan="2">水位（米）</th>
+        <th colspan="2">蓄水量（百万立方米）</th>
+        <th colspan="2">入库流量（立方米每秒）</th>
+        <th rowspan="2">备注</th>
+      </tr>
+      <tr>
+        <th>旬初</th>
+        <th>旬末</th>
+        <th>旬初</th>
+        <th>旬末</th>
+        <th>平均</th>
+        <th>最大</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td rowspan="2">青山水库</td>
+        <td>128.40</td>
+        <td>129.05</td>
+        <td>86.20</td>
+        <td>89.74</td>
+        <td>12.5</td>
+        <td>34.0</td>
+        <td>正常蓄水</td>
+      </tr>
+      <tr>
+        <td>129.05</td>
+        <td>129.62</td>
+        <td>89.74</td>
+        <td>92.10</td>
+        <td>15.8</td>
+        <td>41.2</td>
+        <td>受降雨影响小幅上涨</td>
+      </tr>
+      <tr>
+        <td rowspan="2">碧河水库</td>
+        <td>76.10</td>
+        <td>75.88</td>
+        <td>42.05</td>
+        <td>41.30</td>
+        <td>6.4</td>
+        <td>18.9</td>
+        <td>供水期消落</td>
+      </tr>
+      <tr>
+        <!-- 故意留空的观测单元格：入库流量最大缺测，应保持为空 -->
+        <td>75.88</td>
+        <td>75.60</td>
+        <td>41.30</td>
+        <td>40.72</td>
+        <td>5.9</td>
+        <td></td>
+        <td>最大流量缺测</td>
+      </tr>
+      <tr>
+        <!-- 故意短一行：缺少最后一格，网格空位应导出为空值 -->
+        <td>云岭水库</td>
+        <td>203.77</td>
+        <td>204.11</td>
+        <td>12.60</td>
+        <td>12.88</td>
+        <td>2.1</td>
+        <td>7.7</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="note">
+    说明：本页为采集系统内置示例。表中“水库名称”列使用 rowspan 合并，
+    转换时应向下继承水库名；空单元格与缺格在导出的 CSV 中保持为空。
+  </p>
+</body>
+</html>

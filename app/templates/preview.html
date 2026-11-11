@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="card">
+  <h2>第三步：转换结果预览</h2>
+  <p class="hint">
+    来源页：<a href="{{ url }}" target="_blank" rel="noopener" class="src-url">{{ url }}</a>
+  </p>
+  <div class="stat-row">
+    <div class="stat"><span class="num">{{ parsed.width }}</span><span class="lbl">表宽（首行展开）</span></div>
+    <div class="stat"><span class="num">{{ parsed.total_rows }}</span><span class="lbl">原表行数</span></div>
+    <div class="stat"><span class="num">{{ parsed.header_rows }}</span><span class="lbl">表头行数</span></div>
+    <div class="stat"><span class="num">{{ records|length }}</span><span class="lbl">观测记录条数</span></div>
+  </div>
+
+  <h3>完整表头路径（按列）</h3>
+  <ol class="path-list">
+    {% for p in parsed.header_paths %}
+    <li>第 {{ loop.index }} 列：<code>{{ p or '（空路径）' }}</code></li>
+    {% endfor %}
+  </ol>
+
+  <h3>记录预览（前 100 条，完整数据请下载 CSV）</h3>
+  <div class="mini-scroll">
+    <table class="result-table">
+      <thead>
+      <tr>
+        <th>水库</th><th>表头路径</th><th>原始文本</th>
+        <th>来源行</th><th>来源列</th><th>来源单元格</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for r in records[:100] %}
+      <tr class="{{ 'empty-val' if not r.value else '' }}">
+        <td>{{ r.reservoir }}</td>
+        <td>{{ r.header_path }}</td>
+        <td>{{ r.value if r.value else '（空）' }}</td>
+        <td>{{ r.source_row }}</td>
+        <td>{{ r.source_col }}</td>
+        <td><code>{{ r.source_cell or '—' }}</code></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="muted">没有可导出的正文观测记录（表宽仅 1 列或无正文行）。</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if records|length > 100 %}
+  <p class="hint">仅预览前 100 条，其余 {{ records|length - 100 }} 条包含在 CSV 中。</p>
+  {% endif %}
+
+  <div class="table-actions">
+    <a class="btn primary" href="{{ url_for('download', key=result_key) }}">⬇ 下载 CSV（UTF-8 BOM）</a>
+    <a class="btn ghost" href="{{ url_for('index') }}">← 采集新页面</a>
+  </div>
+</section>
+{% endblock %}

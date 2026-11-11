@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block body %}
+<section class="card">
+  <h2>第二步：选择表格与表头行数</h2>
+  <p class="hint">
+    来源页：<a href="{{ url }}" target="_blank" rel="noopener" class="src-url">{{ url }}</a>
+  </p>
+  <p class="hint">共发现 <strong>{{ tables|length }}</strong> 个表格，预览为容错展开（最多展示前 6 行、前 8 列）。</p>
+
+  {% for t in tables %}
+  <form action="{{ url_for('parse') }}" method="post" class="table-card">
+    <input type="hidden" name="cache_key" value="{{ cache_key }}">
+    <input type="hidden" name="table_index" value="{{ t.index }}">
+    <div class="table-head">
+      <h3>表格 #{{ t.index + 1 }}{% if t.caption %}：{{ t.caption }}{% endif %}</h3>
+      <span class="meta">{{ t.n_rows }} 行 · {{ t.n_cells }} 个单元格 · 展开宽 {{ t.width }} 列</span>
+    </div>
+    <div class="mini-scroll">
+      <table class="mini-table">
+        {% for row in t.preview %}
+        <tr>{% for txt in row %}<td>{{ txt or '—' }}</td>{% endfor %}</tr>
+        {% endfor %}
+      </table>
+    </div>
+    <div class="table-actions">
+      <label>顶部表头行数：
+        <select name="header_rows">
+          <option value="1">1 行</option>
+          <option value="2" selected>2 行</option>
+          <option value="3">3 行</option>
+        </select>
+      </label>
+      <button type="submit" class="btn primary">转换此表格</button>
+    </div>
+  </form>
+  {% endfor %}
+
+  <p><a class="btn ghost" href="{{ url_for('index') }}">← 重新输入 URL</a></p>
+</section>
+{% endblock %}

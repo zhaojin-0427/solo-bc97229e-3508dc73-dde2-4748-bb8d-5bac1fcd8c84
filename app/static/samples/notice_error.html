@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>结构错误演示公示页（示例）</title>
+  <style>
+    body { font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+      max-width: 900px; margin: 30px auto; color: #222; padding: 0 16px; }
+    h1 { font-size: 22px; }
+    h2 { font-size: 17px; color: #b03a2e; margin-top: 34px; }
+    table { border-collapse: collapse; width: 100%; font-size: 14px; margin-bottom: 10px; }
+    th, td { border: 1px solid #555; padding: 7px 9px; text-align: center; }
+    thead th { background: #fdecea; }
+    .desc { font-size: 13px; color: #555; background: #fbf3f2; padding: 10px 14px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>结构错误演示页（用于验证采集系统的报错定位能力）</h1>
+  <p class="desc">
+    本页两张表都包含非法结构。采集系统应标明出错的来源单元格坐标（R行C列）
+    并停止转换，不生成 CSV 记录。
+  </p>
+
+  <h2>表格 #1：表头单元格 rowspan 跨越表头/正文边界</h2>
+  <p class="desc">
+    R1C1 的“水库名称”声明 rowspan=3，从表头第 1 行一直延伸到正文，
+    跨越了表头（2 行）与正文的分界，属于非法结构。
+  </p>
+  <table>
+    <tr>
+      <th rowspan="3">水库名称</th>
+      <th colspan="2">水位（米）</th>
+      <th rowspan="2">备注</th>
+    </tr>
+    <tr>
+      <th>旬初</th>
+      <th>旬末</th>
+    </tr>
+    <tr>
+      <td>128.40</td>
+      <td>129.05</td>
+      <td>正常</td>
+    </tr>
+    <tr>
+      <td>青山水库</td>
+      <td>129.05</td>
+      <td>129.62</td>
+      <td>上涨</td>
+    </tr>
+  </table>
+
+  <h2>表格 #2：正文非首列非法 colspan 合并</h2>
+  <p class="desc">
+    正文第 1 行（整表第 3 行）R3C2 单元格声明 colspan=2，
+    正文除首列水库名外不允许任何合并，应判为正文非法合并。
+  </p>
+  <table>
+    <tr>
+      <th rowspan="2">水库名称</th>
+      <th colspan="2">水位（米）</th>
+      <th rowspan="2">备注</th>
+    </tr>
+    <tr>
+      <th>旬初</th>
+      <th>旬末</th>
+    </tr>
+    <tr>
+      <td>青山水库</td>
+      <td colspan="2">128.40</td>
+      <td>正常</td>
+    </tr>
+    <tr>
+      <td>碧河水库</td>
+      <td>76.10</td>
+      <td>75.88</td>
+      <td>消落</td>
+    </tr>
+  </table>
+</body>
+</html>
