@@ -36,7 +36,7 @@
 │       └── samples/
 │           ├── notice.html        # 标准示例公示页（含合法 rowspan/空值/短行）
 │           └── notice_error.html  # 错误示例页（跨边界 rowspan、正文非法 colspan）
-├── tests/                     # 26 个 unittest 用例（解析规则 + Web 端到端）
+├── tests/                     # 29 个 unittest 用例（解析规则 + Web 端到端 + 并发隔离）
 ├── requirements.txt
 ├── Dockerfile
 ├── docker-compose.yml
@@ -81,14 +81,18 @@ python3 -m unittest discover -s tests -v
 ```
 
 覆盖：表宽确定、表头去重与同路径多列保留、rowspan 继承、空值/短行、
-坐标 1 基计数、四类结构错误定位、错误即停、Flask 全流程与 CSV 内容。
+坐标 1 基计数、四类结构错误定位、错误即停、Flask 全流程与 CSV 内容，
+以及**并发会话隔离**（固定时钟 + 屏障让多个请求在同一毫秒提交不同
+URL，断言每个会话拿到的表格、记录与来源 URL 均不串用）。
 
 ## 设计约束与说明
 
 - 只解析目标 `<table>` 的直属 `<tr>/<td>/<th>`，嵌套表格不会串入。
 - `rowspan=0`、非法跨度属性按浏览器约定按 1 处理；垂直方向超出表格
   底部的 rowspan 按浏览器约定裁剪，**横向**超出表宽判越界报错。
-- 抓取缓存为进程内字典（TTL 30 分钟、上限 50 条），因此 Compose
-  使用单 gunicorn worker + 多线程；如需多 worker 请替换为 Redis 等共享存储。
+- 抓取缓存为进程内字典（TTL 30 分钟、上限 50 条），读写均加锁；会话
+  key 使用全局唯一的 UUID 令牌（不依赖时间戳或缓存长度），同一毫秒内
+  并发提交不同 URL 时互不覆盖。因此 Compose 使用单 gunicorn worker +
+  多线程；如需多 worker 请替换为 Redis 等共享存储。
 - 抓取远程页面时携带自定义 User-Agent、15 秒超时，并按响应头/内容
   推断编码，适配中文公示页常见的 GB 系编码。

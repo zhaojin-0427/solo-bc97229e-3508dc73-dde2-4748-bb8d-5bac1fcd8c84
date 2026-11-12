@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import csv
 import io
+import threading
 import time
 import urllib.parse
+import uuid
 from typing import Optional
 
 import requests
@@ -29,7 +31,11 @@ from .grid_parser import (
 app = Flask(__name__)
 
 # 演示用进程内缓存（单 worker 足够）：key -> {"html", "url", "tables"}
+# 进程内缓存会被 gunicorn 的多线程同时访问，读写都必须持锁；会话 key 使用
+# 全局唯一的 UUID 令牌，不能由时间戳/缓存长度拼出——同一毫秒内并发提交
+# 不同 URL 时，那种拼法会生成相同的 key，导致一个页面覆盖另一页面。
 _FETCH_CACHE: dict[str, dict] = {}
+_FETCH_CACHE_LOCK = threading.RLock()
 _FETCH_TTL = 30 * 60  # 30 分钟
 _FETCH_MAX = 50
 
@@ -38,25 +44,36 @@ SAMPLE_ERROR_URL = "/sample/notice_error.html"
 USER_AGENT = "HydroTableCollector/1.0 (+reservoir bulletin archiver)"
 
 
+def _new_cache_key(kind: str) -> str:
+    """生成互不相同的会话 key。
+
+    ``uuid4`` 由操作系统随机源生成，不依赖时钟精度或当前缓存长度，
+    因此并发（包括同一毫秒）请求之间不会发生 key 冲突。
+    """
+    return f"{kind}-{uuid.uuid4().hex}"
+
+
 def _cache_put(key: str, payload: dict) -> None:
     now = time.time()
-    expired = [k for k, v in _FETCH_CACHE.items() if now - v["ts"] > _FETCH_TTL]
-    for k in expired:
-        _FETCH_CACHE.pop(k, None)
-    while len(_FETCH_CACHE) >= _FETCH_MAX:
-        _FETCH_CACHE.pop(next(iter(_FETCH_CACHE)))
-    payload["ts"] = now
-    _FETCH_CACHE[key] = payload
+    with _FETCH_CACHE_LOCK:
+        expired = [k for k, v in _FETCH_CACHE.items() if now - v["ts"] > _FETCH_TTL]
+        for k in expired:
+            _FETCH_CACHE.pop(k, None)
+        while len(_FETCH_CACHE) >= _FETCH_MAX:
+            _FETCH_CACHE.pop(next(iter(_FETCH_CACHE)))
+        payload["ts"] = now
+        _FETCH_CACHE[key] = payload
 
 
 def _cache_get(key: str) -> Optional[dict]:
-    item = _FETCH_CACHE.get(key)
-    if item is None:
-        return None
-    if time.time() - item["ts"] > _FETCH_TTL:
-        _FETCH_CACHE.pop(key, None)
-        return None
-    return item
+    with _FETCH_CACHE_LOCK:
+        item = _FETCH_CACHE.get(key)
+        if item is None:
+            return None
+        if time.time() - item["ts"] > _FETCH_TTL:
+            _FETCH_CACHE.pop(key, None)
+            return None
+        return item
 
 
 def _is_local_sample(url: str) -> bool:
@@ -159,7 +176,7 @@ def fetch():
         ), 400
 
     summaries = _parse_tables(html)
-    cache_key = f"f{int(time.time() * 1000)}-{len(_FETCH_CACHE)}"
+    cache_key = _new_cache_key("f")
     _cache_put(
         cache_key,
         {"html": html, "url": url, "tables": summaries},
@@ -205,7 +222,7 @@ def parse():
             "error.html", message=str(exc), stage="转换", stopped=True
         ), 422
 
-    result_key = f"r{int(time.time() * 1000)}-{len(_FETCH_CACHE)}"
+    result_key = _new_cache_key("r")
     _cache_put(
         result_key,
         {
